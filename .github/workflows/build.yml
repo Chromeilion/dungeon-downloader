@@ -26,7 +26,6 @@ jobs:
     - name: Save Release URL File for publish
       uses: actions/upload-artifact@v1
       with:
-        name: release_url
         path: release_url.txt
 
   build:
@@ -76,4 +75,3 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         files: ./dist/${{ matrix.OUT_FILE_NAME}}
-        name: ${{ matrix.OUT_FILE_NAME}}
