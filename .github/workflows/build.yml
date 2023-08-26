@@ -17,7 +17,7 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        tag_name: ${{ github.ref }}
+        tag_name: ${{ github.ref_name }}
         draft: false
         prerelease: false
     - name: Output Release URL File
@@ -74,4 +74,5 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
+        tag_name: ${{ github.ref_name }}
         files: ./dist/${{ matrix.OUT_FILE_NAME}}
