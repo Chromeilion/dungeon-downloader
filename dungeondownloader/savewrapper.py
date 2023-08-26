@@ -4,11 +4,10 @@ from pathlib import Path
 from typing import Optional, TypedDict
 
 from pydantic import TypeAdapter, ValidationError
+import appdirs
 
 import dungeondownloader.dd
 import importlib.metadata
-
-CONFIG_FILEPATH = Path("config.json")
 
 
 class ConfigDictBase(TypedDict, total=True):
@@ -21,6 +20,24 @@ class ConfigDict(ConfigDictBase, total=False):
 
 
 cd = TypeAdapter(ConfigDict)
+
+
+def load_config_filepath() -> Path:
+    """
+    Load the path to the config file. First looks in the working
+    directory and then at standard system directories.
+
+    If no config file is present, it will return the location where it
+    should be according to the system standard.
+
+    Returns
+    -------
+    config_path : Path
+    """
+    if Path("./config.json").exists():
+        return Path("./config.json")
+    return Path(appdirs.user_data_dir(appname="dungeon-downloader",
+                                      appauthor="Chromeilion"))
 
 
 def generate_config(root_domain: Optional[str] = None,
@@ -37,7 +54,7 @@ def generate_config(root_domain: Optional[str] = None,
     if hashes is not None:
         config["hashes"] = hashes
 
-    with open(CONFIG_FILEPATH, "w") as f:
+    with open(load_config_filepath(), "w") as f:
         json.dump(config, f)
     return config
 
@@ -45,7 +62,7 @@ def generate_config(root_domain: Optional[str] = None,
 def read_and_validate_config(root_domain: Optional[str] = None,
                              output_dir: Optional[str] = None) -> ConfigDict:
     config: ConfigDict
-    with open(CONFIG_FILEPATH, "r") as f:
+    with open(load_config_filepath(), "r") as f:
         config = json.load(f)
 
     try:
@@ -104,7 +121,7 @@ def main(validate: bool,
     logging.info(f"Running dungeon downloader version "
                  f"{importlib.metadata.version('dungeon-downloader')}")
 
-    if not CONFIG_FILEPATH.exists():
+    if not load_config_filepath().exists():
         logging.info("No config file detected, generating new file")
         config = generate_config(root_domain=root_domain,
                                  output_dir=output_dir)

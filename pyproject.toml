@@ -23,7 +23,8 @@ dependencies = [
     "requests~=2.31.0",
     'tqdm~=4.66.1',
     'pydantic~=2.3.0',
-    'python-dotenv~=1.0.0'
+    'python-dotenv~=1.0.0',
+    'appdirs!=1.4.4'
 ]
 version = "1.1.0"
 
