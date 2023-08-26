@@ -36,8 +36,13 @@ def load_config_filepath() -> Path:
     """
     if Path("./config.json").exists():
         return Path("./config.json")
-    return Path(appdirs.user_data_dir(appname="dungeon-downloader",
-                                      appauthor="Chromeilion"))
+    config_path = Path(
+        appdirs.user_data_dir(
+            appname="dungeon-downloader",
+            appauthor="Chromeilion"
+        )
+    ).joinpath("config.json")
+    return config_path
 
 
 def generate_config(root_domain: Optional[str] = None,
@@ -54,7 +59,9 @@ def generate_config(root_domain: Optional[str] = None,
     if hashes is not None:
         config["hashes"] = hashes
 
-    with open(load_config_filepath(), "w") as f:
+    config_path = load_config_filepath()
+    config_path.parent.mkdir(exist_ok=True)
+    with open(config_path, "w") as f:
         json.dump(config, f)
     return config
 
