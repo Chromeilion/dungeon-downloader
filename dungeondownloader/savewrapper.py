@@ -73,7 +73,7 @@ def update_hashes(config: ConfigDict,
                   hashes: Optional[dict[str, str]] = None):
     logging.debug("Saving hashes")
     if hashes is None:
-        logging.debug("No new hashes found")
+        logging.info("No new hashes found")
         return
     if "hashes" not in config.keys():
         config["hashes"] = {}
@@ -102,7 +102,7 @@ def main(validate: bool,
     config: ConfigDict
 
     logging.info(f"Running dungeon downloader version "
-                 f"{importlib.metadata.version('dungeondownloader')}")
+                 f"{importlib.metadata.version('dungeon-downloader')}")
 
     if not CONFIG_FILEPATH.exists():
         logging.info("No config file detected, generating new file")
@@ -116,8 +116,8 @@ def main(validate: bool,
     hashes = None
     if "hashes" in config.keys():
         hashes = config["hashes"]
-    hashes = dungeondownloader.dd.main(root_domain=config["root_domain"],
-                                       output_dir=config["output_dir"],
-                                       hashes=hashes,
-                                       validate=validate)
-    update_hashes(config=config, hashes=hashes)
+    new_hashes = dungeondownloader.dd.main(root_domain=config["root_domain"],
+                                           output_dir=config["output_dir"],
+                                           hashes=hashes,
+                                           validate=validate)
+    update_hashes(config=config, hashes=new_hashes)

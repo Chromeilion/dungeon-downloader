@@ -122,6 +122,7 @@ def main(root_domain: str,
     invalid_patch_files, hashes = check_files(files=patch_files,
                                               hashes=hashes,
                                               validate=validate)
+    new_hashes = None
     if invalid_patch_files:
         hasher = Hashing()
         calc_full_urls(url_root=patch_root, files=patch_files)
@@ -134,6 +135,4 @@ def main(root_domain: str,
                 logging.error(f"The hash of the downloaded file "
                               f"{i['full_path']} does not match the hash "
                               f"provided online.")
-            else:
-                hashes[str(i["full_path"])] = new_hashes[str(i["full_path"])]
-    return hashes
+    return new_hashes

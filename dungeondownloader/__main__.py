@@ -51,6 +51,7 @@ def main():
     parser.set_defaults(func=dungeondownloader.savewrapper.main)
     args = parser.parse_args()
     args.func(**vars(args))
+    logging.info("Run complete, exiting")
 
 
 if __name__ == "__main__":
