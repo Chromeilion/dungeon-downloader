@@ -6,9 +6,11 @@ command!
 ## Install
 
 ### Release
-Simply download the latest release for your platform from the repo and 
+Simply download the latest release for your platform from
+[here](https://github.com/Chromeilion/dungeon-downloader/releases) and 
 run it like any binary. For example, you can run ```./dungeondownloader```
-in a bash terminal.
+in a bash terminal. You may need to make the file executible as well 
+with something such as ```chmod +x dungeondownloader```.
 
 This method is preferred because you don't need to have python 3.12 
 installed.
@@ -22,7 +24,7 @@ Then to run the module you can just type ```dungeon-downloader``` in
 your terminal.
 ### For Development
 
-For development, you may want to install the package in-place. For this 
+For development, you will want to install the package in-place. For this 
 make sure to be using python 3.12 and then run:
 
 ```bash
@@ -44,7 +46,7 @@ provide.
 is downloaded. For example:
 
 ```bash
--r https://cdn.dungeongame.com/Dungeon%20Game
+-r http://cdn.dungeongame.com/Dungeon%20Game
 ```
 
 ```-o``` or ```--output-dir``` is the directory to which to save 
@@ -57,9 +59,10 @@ outputs. For example:
 Keep in mind, the outputs folder should lead to the root folder 
 containing the game files, not the folder above it.
 
-You can also just run the script, and it will prompt you for input if 
-the config is missing. The script saves all configuration to a config.json 
-file, so you don't need to supply the command line arguments every time.
+You can also just run the script without arguments, and it will prompt 
+you for input. The script saves all configuration to a config.json 
+file, so you don't need to supply the command line arguments every time 
+you run it.
 
 If you supply command line arguments, they will always overwrite the 
 current config.json.
