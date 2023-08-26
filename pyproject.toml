@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools", "setuptools-scm"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "dungeon-downloader"
+authors = [
+    {name = "Chromeilion", email = "uki@cro.moe"},
+]
+description = "Download, update, and verify files for a certain dungeon game."
+readme = "README.md"
+requires-python = ">=3.12"
+license = {file = "LICENSE"}
+classifiers = [
+    "Programming Language :: Python :: 3",
+]
+dependencies = [
+    "requests~=2.31.0",
+    'tqdm~=4.66.1',
+    'pydantic~=2.3.0',
+    'python-dotenv~=1.0.0'
+]
+version = "1.0.0"
