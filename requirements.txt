@@ -3,3 +3,4 @@ tqdm~=4.66.1
 pydantic~=2.3.0
 python-dotenv~=1.0.0
 pyinstaller~=5.13.0
+appdirs~=1.4.4
