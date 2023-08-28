@@ -1,5 +1,6 @@
 import logging
 import os
+from importlib.metadata import version
 
 from dotenv import load_dotenv
 
@@ -19,6 +20,8 @@ def set_loglevel():
 
 def main():
     set_loglevel()
+    logging.info(f"Running dungeon downloader version "
+                 f"{version('dungeon-downloader')}")
     dungeondownloader.cli.main()
     logging.info("Run complete, exiting")
 

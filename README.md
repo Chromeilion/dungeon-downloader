@@ -3,6 +3,11 @@
 Download, update, and verify your dungeon game files, all with one 
 command!
 
+## Disclaimer
+
+This is a fan made program that relies on an undocumented API and may have 
+errors. Use at your own risk.
+
 ## Install
 ### Release
 Simply download the latest release for your platform from
@@ -70,9 +75,13 @@ directory for your OS. For linux that would be
 If you supply command line arguments, they will always overwrite the 
 current config file.
 
-When rerunning the script, only files whose hashes have changed online 
-will be updated. To force a full recalculation of all local hashes 
-(stored in config.json), you can supply the ```-v``` flag.
+### Optional Arguments
+
+```-d``` or ```--delete-files``` will delete all files that were 
+previously downloaded but are no longer present in the online patch list.
+
+```-v``` or ```--validate``` forces a full recalculation of all local 
+hashes (stored in config.json).
 
 For more info just run Dungeon Downloader with the ```-h``` flag.
 

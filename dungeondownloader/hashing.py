@@ -1,4 +1,5 @@
 import hashlib
+import logging
 import os
 import platform
 from functools import partial
@@ -41,6 +42,7 @@ class Hashing:
             files = [files]
 
         system = platform.system()
+        logging.debug(f"Identified {system} as platform")
         try:
             if system == "Darwin":
                 sh256_hash = self._get_sha256_hash_darwin(files=files)

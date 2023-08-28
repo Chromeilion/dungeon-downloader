@@ -32,6 +32,13 @@ def main():
         help="Whether to recalculate the hashes of all files instead "
              "of using the cached hashes from the last run.",
     )
+    parser.add_argument(
+        "-d", "--delete-files",
+        action="store_true",
+        help="Whether to delete files that are not present in the "
+             "patch list. Will ask for confirmation if the number of "
+             "deleted files is high."
+    )
     parser.set_defaults(func=dungeondownloader.savewrapper.main)
     args = parser.parse_args()
     args.func(**vars(args))
