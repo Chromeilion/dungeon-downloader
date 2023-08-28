@@ -4,7 +4,6 @@ Download, update, and verify your dungeon game files, all with one
 command!
 
 ## Install
-
 ### Release
 Simply download the latest release for your platform from
 [here](https://github.com/Chromeilion/dungeon-downloader/releases) and 
@@ -62,10 +61,14 @@ containing the game files, not the folder above it.
 You can also just run the script without arguments, and it will prompt 
 you for input. The script saves all configuration to a config.json 
 file, so you don't need to supply the command line arguments every time 
-you run it.
+you run it. 
+
+By default, the config file is located in the standard program data 
+directory for your OS. For linux that would be 
+```$XDG_DATA_DIRS/dungeon-downloader/config.json```.
 
 If you supply command line arguments, they will always overwrite the 
-current config.json.
+current config file.
 
 When rerunning the script, only files whose hashes have changed online 
 will be updated. To force a full recalculation of all local hashes 

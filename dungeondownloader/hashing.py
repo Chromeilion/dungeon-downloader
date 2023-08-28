@@ -16,6 +16,27 @@ class Hashing:
     """
     def get_sha256_hash(self, files: Union[list[Path], Path]) -> \
             dict[str, str]:
+        """
+        Get the sha256 hash of a file. Attempts to use platform
+        specific utilities but falls back to pure Python if there is an
+        error.
+
+        Uses multithreading and number of processes equal to number of
+        CPU cores.
+
+        Parameters
+        ----------
+        files : Union[list[Path], Path]
+            Either a single Path object or a list
+
+        Returns
+        -------
+        hash : dict[str, str]
+            Because execution may be out of order (due to
+            multiprocessing), the returned dictionary is probably not
+            in the same order as the given files list. The key is the
+            provided file path and the value is the hash.
+        """
         if not isinstance(files, list):
             files = [files]
 
@@ -38,8 +59,8 @@ class Hashing:
     @staticmethod
     def _get_sha256_hash_generic(files: list[Path]) -> dict[str, str]:
         """
-        Native Python sha256 hash calculation implementation, should work
-        anywhere where Python works but is slow.
+        Native Python sha256 hash calculation implementation, should
+        work anywhere where Python works but is slow.
         """
         hashes = {}
         for i in files:
@@ -54,8 +75,8 @@ class Hashing:
     @staticmethod
     def _sha256sum(files: list[Path]) -> dict[str, str]:
         """
-        Use the sha256sum command with multiple threads to quickly calculate
-        file hashes.
+        Use the sha256sum command with multiple threads to quickly
+        calculate file hashes.
         """
         commands = [("sha256sum", str(i)) for i in files]
         results = {}
@@ -82,7 +103,8 @@ class Hashing:
     def _get_sha256_hash_darwin(self, files: list[Path]) -> \
             dict[str, str]:
         """
-        Hash calculation for Apple systems, relies on the sha256sum command.
+        Hash calculation for Apple systems, relies on the sha256sum
+        command.
         """
         return self._sha256sum(files=files)
 

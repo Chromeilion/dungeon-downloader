@@ -1,24 +1,32 @@
+import importlib.metadata
 import json
 import logging
 from pathlib import Path
 from typing import Optional, TypedDict
 
-from pydantic import TypeAdapter, ValidationError
 import appdirs
+from pydantic import TypeAdapter, ValidationError
 
 import dungeondownloader.dd
-import importlib.metadata
 
 
 class ConfigDictBase(TypedDict, total=True):
+    """
+    Required config keys.
+    """
     root_domain: str
     output_dir: str
 
 
 class ConfigDict(ConfigDictBase, total=False):
+    """
+    Optional config keys.
+    """
     hashes: dict[str, str]
 
 
+# For Pydantic type checking. This line is the reason this program
+# doesn't work on Python < 3.12.
 cd = TypeAdapter(ConfigDict)
 
 
@@ -48,6 +56,15 @@ def load_config_filepath() -> Path:
 def generate_config(root_domain: Optional[str] = None,
                     output_dir: Optional[str] = None,
                     hashes: Optional[dict[str, str]] = None):
+    """
+    Create a new config and write it to disk.
+
+    Parameters
+    ----------
+    root_domain : Optional[str]
+    output_dir : Optional[str]
+    hashes : Optional[dict[str, str]]
+    """
     if root_domain is None:
         root_domain = input("Please specify the root domain to use:")
     if output_dir is None:
@@ -68,6 +85,18 @@ def generate_config(root_domain: Optional[str] = None,
 
 def read_and_validate_config(root_domain: Optional[str] = None,
                              output_dir: Optional[str] = None) -> ConfigDict:
+    """
+    Load a config file and use Pydantic to validate it against the
+    ConfigDict type.
+    If a ValidationError is encountered, a new config with correct type
+    is generated.
+
+    This module is important for whenever there is a change to the
+    ConfigDict type between updates for example.
+    The current way of handling it (regenerating the whole file) is not
+    ideal, perhaps it would be better to try and salvage what parts of
+    the file are recognizable and build the new file from that.
+    """
     config: ConfigDict
     with open(load_config_filepath(), "r") as f:
         config = json.load(f)
@@ -95,6 +124,17 @@ def read_and_validate_config(root_domain: Optional[str] = None,
 
 def update_hashes(config: ConfigDict,
                   hashes: Optional[dict[str, str]] = None):
+    """
+    Given a loaded config and dictionary of new hashes, update config
+    with the new hashes and save the new updated file.
+
+    If there are no new hashes then do nothing.
+
+    Parameters
+    ----------
+    config : ConfigDict
+    hashes : Optional[dict[str, str]]
+    """
     logging.debug("Saving hashes")
     if hashes is None:
         logging.info("No new hashes found")
@@ -119,6 +159,19 @@ def main(validate: bool,
          root_domain: Optional[list[str]] = None,
          output_dir: Optional[list[str]] = None,
          *_, **__):
+    """
+    Function responsible for loading and saving data to/from the config
+    file.
+
+    Parameters
+    ----------
+    validate : bool
+        Whether to recalculate and check hashes of all files
+    root_domain
+        The root domain from which to calculate download paths
+    output_dir
+        Where to save all the files
+    """
     if root_domain is not None:
         root_domain = root_domain[0]
     if output_dir is not None:
