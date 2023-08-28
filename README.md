@@ -39,20 +39,23 @@ so that you get Python debug utils as well.
 ## Usage
 
 When running for the first time, there are two flags that you need to 
-provide.
+provide. 
 
 ```-r``` or ```--root-domain``` is the root domain from which everything 
 is downloaded. For example:
 
 ```bash
--r http://cdn.dungeongame.com/Dungeon%20Game
+dungeondownloader -r "put_the_correct_link_here"
 ```
+
+This link is not provided with this package, you need to 
+find it yourself.
 
 ```-o``` or ```--output-dir``` is the directory to which to save 
 outputs. For example:
 
 ```bash
--o "/home/user/games/game_dev/Dungeon Game"
+dungeondownloader -o "/home/user/games/game_dev/Dungeon Game"
 ```
 
 Keep in mind, the outputs folder should lead to the root folder 
