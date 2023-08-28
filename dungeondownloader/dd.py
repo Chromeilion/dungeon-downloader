@@ -263,8 +263,6 @@ def main(root_domain: str,
     patch_root = root_domain + "/Patch"
     patch_file_list_location = "/PatchFileList.txt"
 
-    hashes["/home/chromeilion/Games/dark-and-darker/drive_c/Program Files/IRONMACE/Dark and Darker/rach3_2022-02-28_a01_split14.mid"] = "sohinshesniahsneahi"
-
     # Respect server maintenance. Downloading files before maintenance is
     # over could result in a corrupt installation.
     if check_maintenence(root_domain=root_domain):
