@@ -4,6 +4,8 @@ import dungeondownloader.savewrapper
 
 
 def main():
+    """Run the CLI with Argparse and call the rest of the module afterward.
+    """
     parser = ap.ArgumentParser(
         prog="Dungeon Downloader",
         description="A useful script for downloading, updating, and "

@@ -8,6 +8,10 @@ import dungeondownloader.cli
 
 
 def set_loglevel():
+    """
+    Set the log level based on the DUNGEONDOWNLOADER_LOGLEVEL env
+    variable. Supports a .env file and defaults to 'INFO'.
+    """
     load_dotenv()
     logging.basicConfig(
         format='%(levelname)s:%(message)s',
@@ -19,9 +23,13 @@ def set_loglevel():
 
 
 def main():
+    """Script Entrypoint. Sets loglevel and runs the CLI.
+    """
     set_loglevel()
     logging.info(f"Running dungeon downloader version "
                  f"{version('dungeon-downloader')}")
+    logging.info("This is a fan made program and uses an undocumented API, "
+                 "use at your own risk")
     dungeondownloader.cli.main()
     logging.info("Run complete, exiting")
 

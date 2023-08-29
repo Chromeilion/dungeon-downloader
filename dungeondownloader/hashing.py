@@ -12,8 +12,7 @@ from tqdm import tqdm
 
 
 class Hashing:
-    """
-    Class containing functions for calculating hashes
+    """Class containing functions for calculating hashes.
     """
     def get_sha256_hash(self, files: Union[list[Path], Path]) -> \
             dict[str, str]:

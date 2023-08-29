@@ -1,32 +1,13 @@
 import json
 import logging
 from pathlib import Path
-from typing import Optional, TypedDict
+from typing import Optional
 
 import appdirs
-from pydantic import TypeAdapter, ValidationError
+from pydantic import ValidationError
 
 import dungeondownloader.dd
-
-
-class ConfigDictBase(TypedDict, total=True):
-    """
-    Required config keys.
-    """
-    root_domain: str
-    output_dir: str
-
-
-class ConfigDict(ConfigDictBase, total=False):
-    """
-    Optional config keys.
-    """
-    hashes: dict[str, str]
-
-
-# For Pydantic type checking. This line is the reason this program
-# doesn't work on Python < 3.12.
-cd = TypeAdapter(ConfigDict)
+from dungeondownloader.config_dict import ConfigDict
 
 
 def load_config_filepath() -> Path:
@@ -76,7 +57,7 @@ def generate_config(config_location: Path,
         root_domain = input("Please specify the root domain to use:")
     if output_dir is None:
         output_dir = input("Please specify the output directory:")
-    config: ConfigDict = {
+    config: ConfigDict.cd = {
         "root_domain": root_domain,
         "output_dir": output_dir,
     }
@@ -92,7 +73,8 @@ def generate_config(config_location: Path,
 
 def read_and_validate_config(config_location: Path,
                              root_domain: Optional[str] = None,
-                             output_dir: Optional[str] = None) -> ConfigDict:
+                             output_dir: Optional[str] = None
+                             ) -> ConfigDict.cd:
     """
     Load a config file and use Pydantic to validate it against the
     ConfigDict type.
@@ -105,12 +87,12 @@ def read_and_validate_config(config_location: Path,
     ideal, perhaps it would be better to try and salvage what parts of
     the file are recognizable and build the new file from that.
     """
-    config: ConfigDict
+    config: ConfigDict.cd
     with open(config_location, "r") as f:
         config = json.load(f)
     logging.debug(f"Loaded config file, attempting to validate")
     try:
-        cd.validate_python(config)
+        ConfigDict.cdp.validate_python(config)
         logging.info("Config successfully loaded and validated")
     except ValidationError:
         logging.warning("The current config is invalid, generating a "
@@ -134,42 +116,82 @@ def read_and_validate_config(config_location: Path,
     return config
 
 
-def update_hashes(config_location: Path,
-                  config: ConfigDict,
-                  hashes: Optional[dict[str, str]] = None):
+def add_new_hashes(new_hashes: dict[str, str], hash_dict: dict[str, str]):
     """
-    Given a loaded config and dictionary of new hashes, update config
-    with the new hashes and save the new updated file.
+    Add/update hashes in hash_dict based on values in new_hashes.
+    Performs operations on hash_dict in-place.
+    """
+    for key, value in new_hashes.items():
+        if key not in hash_dict:
+            logging.debug(f"Local hash doesn't exist for {key}, creating new "
+                          f"entry and saving hash to local database")
+            hash_dict[key] = value
+        elif hash_dict[key] != value:
+            logging.debug(f"Hash changed for {key}, saving new hash to local "
+                          f"database")
+            hash_dict[key] = value
+        else:
+            logging.debug(f"Asked to update {key} in the local hash database, "
+                          f"but there's nothing to update. This is normal if "
+                          f"the file is new.")
 
-    If there are no new hashes then do nothing.
+
+def remove_hashes(deleted_hashes: dict[str, str], hash_dict: dict[str, str]):
+    """
+    Remove hashes from a hash_dict in-place based on hashes in
+    deleted_hashes.
+    """
+    for key, value in deleted_hashes.items():
+        if key in hash_dict:
+            logging.debug(f"Removing {key} from local hash cache")
+            hash_dict.pop(key)
+        else:
+            logging.error(f"Asked to remove {key} from local hash cache, but "
+                          f"it is not present in the cache")
+
+
+def update_hashes(config_location: Path,
+                  config: ConfigDict.cd,
+                  new_hashes: Optional[dict[str, str]] = None,
+                  deleted_hashes: Optional[dict[str, str]] = None):
+    """
+    Given a loaded config dict, a dict of new hashes, and a dict
+    of hashes to remove, update config with the new hashes and save the
+    new updated file.
 
     Parameters
     ----------
-    config : ConfigDict
-    hashes : Optional[dict[str, str]]
+    config : ConfigDict.cd
+    new_hashes : Optional[dict[str, str]]
+    deleted_hashes : Optional[dict[str, str]]
     config_location : Path
+
+    Notes
+    -----
+    This function is longer (and slower) than it needs to be because
+    every case is getting logged. While it certainly adds to the code
+    complexity, logging also makes it much easier to debug issues, so I
+    think its worth it.
     """
-    logging.debug("Saving hashes")
-    if hashes is None:
-        logging.info("No new hashes found")
-        return
-    if "hashes" not in config.keys():
+    logging.debug("Updating hashes")
+    if "hashes" not in config:
+        logging.debug("Hashes not found in config, creating new hashes "
+                      "entry")
         config["hashes"] = {}
-
-    config_keys = config["hashes"].keys()
-    for key, value in hashes.items():
-        if key not in config_keys:
-            logging.debug(f"Local hash doesn't exist for {key}, creating new "
-                          f"entry and saving hash")
-            config["hashes"][key] = value
-        elif config["hashes"][key] != value:
-            logging.debug(f"Hash changed for {key}, saving new hash")
-            config["hashes"][key] = value
-
-    generate_config(root_domain=config["root_domain"],
-                    output_dir=config["output_dir"],
-                    hashes=hashes,
-                    config_location=config_location)
+    hash_dict = config["hashes"]
+    if new_hashes is None:
+        logging.debug("No new hashes found")
+    else:
+        add_new_hashes(new_hashes=new_hashes, hash_dict=hash_dict)
+    if deleted_hashes is None:
+        logging.debug("No hashes deleted")
+    else:
+        remove_hashes(deleted_hashes=deleted_hashes, hash_dict=hash_dict)
+    if new_hashes is not None or deleted_hashes is not None:
+        generate_config(root_domain=config["root_domain"],
+                        output_dir=config["output_dir"],
+                        hashes=hash_dict,
+                        config_location=config_location)
 
 
 def main(validate: bool,
@@ -196,7 +218,7 @@ def main(validate: bool,
         root_domain = root_domain[0]
     if output_dir is not None:
         output_dir = output_dir[0]
-    config: ConfigDict
+    config: ConfigDict.cd
 
     config_filepath = load_config_filepath()
     if not config_filepath.exists():
@@ -215,11 +237,14 @@ def main(validate: bool,
         hashes = config["hashes"]
     logging.info(f"Running with root domain: {config['root_domain']} and "
                  f"output directory: {config['output_dir']}")
-    new_hashes = dungeondownloader.dd.main(root_domain=config["root_domain"],
-                                           output_dir=config["output_dir"],
-                                           hashes=hashes,
-                                           validate=validate,
-                                           remove_files=delete_files)
+    new_hashes, deleted_hashes = dungeondownloader.dd.main(
+        root_domain=config["root_domain"],
+        output_dir=config["output_dir"],
+        hashes=hashes,
+        validate=validate,
+        remove_files=delete_files
+    )
     update_hashes(config=config,
-                  hashes=new_hashes,
+                  new_hashes=new_hashes,
+                  deleted_hashes=deleted_hashes,
                   config_location=config_filepath)
