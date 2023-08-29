@@ -50,14 +50,17 @@ provide:
 is downloaded. For example:
 
 ```bash
--r http://cdn.dungeongame.com/Dungeon%20Game
+dungeondownloader -r "put_the_correct_link_here"
 ```
+
+This link is not provided with this package, you need to 
+find it yourself.
 
 ```-o``` or ```--output-dir``` is the directory to which to save 
 outputs. For example:
 
 ```bash
--o "/home/user/games/game_dev/Dungeon Game"
+dungeondownloader -o "/home/user/games/game_dev/Dungeon Game"
 ```
 
 Keep in mind, the outputs folder should lead to the root folder 
