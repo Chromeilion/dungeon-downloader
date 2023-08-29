@@ -1,6 +1,5 @@
 import logging
 import os
-from importlib.metadata import version
 
 from dotenv import load_dotenv
 
@@ -26,12 +25,7 @@ def main():
     """Script Entrypoint. Sets loglevel and runs the CLI.
     """
     set_loglevel()
-    logging.info(f"Running dungeon downloader version "
-                 f"{version('dungeon-downloader')}")
-    logging.info("This is a fan made program and uses an undocumented API, "
-                 "use at your own risk")
     dungeondownloader.cli.main()
-    logging.info("Run complete, exiting")
 
 
 if __name__ == "__main__":

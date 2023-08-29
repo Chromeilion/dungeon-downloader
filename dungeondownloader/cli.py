@@ -1,6 +1,8 @@
 import argparse as ap
+import logging
 
 import dungeondownloader.savewrapper
+from dungeondownloader._version import __version__
 
 
 def main():
@@ -10,6 +12,11 @@ def main():
         prog="Dungeon Downloader",
         description="A useful script for downloading, updating, and "
                     "verifying various dungeon related files."
+    )
+    parser.add_argument(
+        '--version',
+        action='version',
+        version=f'%(prog)s {__version__}'
     )
     parser.add_argument(
         "-r", "--root-domain",
@@ -43,4 +50,8 @@ def main():
     )
     parser.set_defaults(func=dungeondownloader.savewrapper.main)
     args = parser.parse_args()
+    logging.info(f"Running dungeon downloader version "
+                 f"{__version__}")
+    logging.info("This is a fan made program and uses an undocumented API, "
+                 "use at your own risk")
     args.func(**vars(args))
