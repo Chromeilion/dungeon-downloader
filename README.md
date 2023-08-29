@@ -44,7 +44,7 @@ so that you get Python debug utils as well.
 ## Usage
 
 When running for the first time, there are two flags that you need to 
-provide.
+provide:
 
 ```-r``` or ```--root-domain``` is the root domain from which everything 
 is downloaded. For example:
@@ -76,6 +76,8 @@ If you supply command line arguments, they will always overwrite the
 current config file.
 
 ### Optional Arguments
+These arguments don't get saved, so they need to be present every time the 
+script is run if you want to use them.
 
 ```-d``` or ```--delete-files``` will delete all files that were 
 previously downloaded but are no longer present in the online patch list.
