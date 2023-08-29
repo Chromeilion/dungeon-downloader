@@ -44,9 +44,9 @@ def main():
     parser.add_argument(
         "-d", "--delete-files",
         action="store_true",
-        help="Whether to delete files that are not present in the "
-             "patch list. Will ask for confirmation if the number of "
-             "deleted files is high."
+        help="Whether to delete files that were previously downloaded but "
+             "are no longer present in the latest patch list. Will ask for "
+             "confirmation if the number of files to delete is high."
     )
     parser.set_defaults(func=dungeondownloader.savewrapper.main)
     args = parser.parse_args()
