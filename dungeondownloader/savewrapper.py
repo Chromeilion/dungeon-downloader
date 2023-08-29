@@ -155,9 +155,9 @@ def update_hashes(config_location: Path,
                   new_hashes: Optional[dict[str, str]] = None,
                   deleted_hashes: Optional[dict[str, str]] = None):
     """
-    Given a loaded config dict, a dict of new hashes, and a dict
-    of hashes to remove, update config with the new hashes and save the
-    new updated file.
+    Given a config dict, a dict of new hashes, and a dict
+    of hashes to remove, update config with the new hashes, remove the
+    hashes in the removal list, and save the new updated file.
 
     Parameters
     ----------

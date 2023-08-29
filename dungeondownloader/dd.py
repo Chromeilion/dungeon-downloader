@@ -215,6 +215,8 @@ def remove_redundant_files(hashes: dict[str, str],
         no_deleted = len(delete) - (len(delete) - len(deleted))
         logging.info(f"Deleted {no_deleted} files from disk that are no "
                      f"longer on the patch list")
+    else:
+        delete = None
     return delete
 
 
