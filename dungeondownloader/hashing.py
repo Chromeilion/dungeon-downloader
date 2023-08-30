@@ -30,10 +30,8 @@ class Hashing:
 
         Returns
         -------
-        hash : Because execution may be out of order (due to
-            multiprocessing), the returned dictionary is probably not
-            in the same order as the given files list. The key is the
-            provided file path and the value is the hash.
+        hash : dictionary where the key is the provided file path and
+            the value is the hash
         """
         if not isinstance(files, list):
             files = [files]

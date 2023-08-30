@@ -73,10 +73,11 @@ def read_and_validate_config(config_location: Path,
                              ) -> ConfigDict:
     """
     Load a config file and use Pydantic to validate it against the
-    ConfigDict type.
-    If a ValidationError is encountered, a new config with correct type
-    is generated.
+    ConfigDict type. If a ValidationError is encountered, a new config
+    with correct type is generated.
 
+    Notes
+    -----
     This module is important for whenever there is a change to the
     ConfigDict type between updates for example.
     The current way of handling it (regenerating the whole file) is not
@@ -203,10 +204,10 @@ def main(validate: bool,
 
     Parameters
     ----------
-    delete_files : Whether to delete files not present in the patch list
-    validate : Whether to recalculate and check hashes of all files
-    root_domain : The root domain from which to calculate download paths
-    output_dir : Where to save all the files
+    delete_files : whether to delete files not present in the patch list
+    validate : whether to recalculate and check hashes of all files
+    root_domain : the root domain from which to calculate download paths
+    output_dir : where to save all the files
     """
     config: ConfigDict
 

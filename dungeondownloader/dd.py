@@ -116,14 +116,14 @@ def check_files(files: file_list,
     ----------
     files : list of files to check
     validate : whether to recalculate all local hashes
-    hashes : hashes from the last run, asssumed to be correct unless
+    hashes : hashes from the last run, assumed to be correct unless
         validate is True
 
     Returns
     -------
-    invalid : Files whose hashes do not match
+    invalid : Files detected as invalid
     hashes : If validate is true, the new validated hashes. Any files
-        present in files but not in hashes are added to hashes as well.
+        present in files but not in hashes are added to hashes as well
     """
     if hashes is None:
         hashes = {}
@@ -168,9 +168,7 @@ def calc_full_urls(url_root: str, files: file_list) -> None:
 
 def update_files(files: file_list) -> None:
     """
-    Download files from a list of PatchFile objects. The 'size'
-    parameter is used to create a progress bar and estimate time
-    remaining.
+    Download files from a list of PatchFile objects.
     Uses multiple threads to speed up the download (in some cases).
     """
     total = sum([i["size"] for i in files])
@@ -196,8 +194,8 @@ def remove_redundant_files(hashes: dict[str, str],
 
     Returns
     -------
-    deleted : A list of all files that have been deleted in the form of full
-        filepaths.
+    deleted : A list of all files that have been deleted in the form of
+        full filepaths.
     """
     delete_list: list[str] = []
     all_filepaths = [str(i["full_path"]) for i in patch_files]
@@ -272,20 +270,17 @@ def main(root_domain: str,
 
     Parameters
     ----------
-    root_domain : the base domain from which to calculate all other url's
+    root_domain : the base domain from which to calculate all other urls
     output_dir : where to save all downloaded files
     validate : whether to check integrity of all files
-    hashes : Provided hashes are assumed to be from previous runs of the
-        program and are assumed to be correct. If you think that these
-        are wrong then set validate to True.
-    remove_files : Whether to remove files that were previously downloaded,
-        but are no longer present on the current patch list.
+    hashes : hashes from previous runs, assumed to be correct
+    remove_files : whether to remove files that are present in hashes
+        but not on the current patch list
 
     Returns
     -------
-    new_files, deleted_files : If any new files were downloaded, their
-        paths and hashes are returned in new_files. If any files were
-        deleted, their paths and hashes are returned in deleted_files.
+    new_files, deleted_files : If any new files were downloaded or if
+        any files were deleted, their paths and hashes are returned
     """
     if remove_files is None:
         remove_files = False
