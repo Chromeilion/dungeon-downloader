@@ -49,11 +49,10 @@ def download(url: str, filepath: str,
 
     Parameters
     ----------
-    url : str
-    filepath : str
-    pbar : tqdm
-    chunk_size : int
-        default is 1024
+    url : url to download the file from
+    filepath : path where to save file
+    pbar : tqdm progress bar that will be updated with each iteration
+    chunk_size : amount do download and save at once, default is 1024
     """
     if chunk_size is None:
         chunk_size = 1024
@@ -115,17 +114,16 @@ def check_files(files: file_list,
 
     Parameters
     ----------
-    files : file_list
-    validate : bool
-    hashes : Optional[hash_dict]
+    files : list of files to check
+    validate : whether to recalculate all local hashes
+    hashes : hashes from the last run, asssumed to be correct unless
+        validate is True
 
     Returns
     -------
-    invalid : file_list
-        Files whose hashes do not match
-    hashes : hash_dict
-        If validate is true, the new validated hashes. Any files present
-        in files but not in hashes are added to hashes as well.
+    invalid : Files whose hashes do not match
+    hashes : If validate is true, the new validated hashes. Any files
+        present in files but not in hashes are added to hashes as well.
     """
     if hashes is None:
         hashes = {}
@@ -198,8 +196,7 @@ def remove_redundant_files(hashes: dict[str, str],
 
     Returns
     -------
-    deleted : Optional[list[str]]
-        A list of all files that have been deleted in the form of full
+    deleted : A list of all files that have been deleted in the form of full
         filepaths.
     """
     delete_list: list[str] = []
@@ -275,23 +272,20 @@ def main(root_domain: str,
 
     Parameters
     ----------
-    root_domain : str
-    output_dir : str
-    validate : bool
-    hashes : Optional[hash_dict]
-        Provided hashes are assumed to be from previous runs of the
+    root_domain : the base domain from which to calculate all other url's
+    output_dir : where to save all downloaded files
+    validate : whether to check integrity of all files
+    hashes : Provided hashes are assumed to be from previous runs of the
         program and are assumed to be correct. If you think that these
         are wrong then set validate to True.
-    remove_files : bool
-        Whether to remove files that were previously downloaded, but are
-        no longer present on the current patch list.
+    remove_files : Whether to remove files that were previously downloaded,
+        but are no longer present on the current patch list.
 
     Returns
     -------
-    new_files, deleted_files : Optional[hash_dict]
-        If any new files were downloaded, their paths and hashes are
-        returned in new_files. If any files were deleted, their paths
-        and hashes are returned in deleted_files.
+    new_files, deleted_files : If any new files were downloaded, their
+        paths and hashes are returned in new_files. If any files were
+        deleted, their paths and hashes are returned in deleted_files.
     """
     if remove_files is None:
         remove_files = False

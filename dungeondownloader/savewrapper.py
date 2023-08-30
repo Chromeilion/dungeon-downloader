@@ -17,10 +17,6 @@ def load_config_filepath() -> Path:
 
     If no config file is present, it will return the location where it
     should be according to the system standard.
-
-    Returns
-    -------
-    config_path : Path
     """
     if Path("./config.json").exists():
         config_path = Path("./config.json")
@@ -48,10 +44,10 @@ def generate_config(config_location: Path,
 
     Parameters
     ----------
-    config_location : Path
-    root_domain : Optional[str]
-    output_dir : Optional[str]
-    hashes : Optional[dict[str, str]]
+    config_location : path where to save the config file
+    root_domain : root domain url, saved to config
+    output_dir : output directory string, saved to config
+    hashes : the hash dictionary if there is one
     """
     if root_domain is None:
         root_domain = input("Please specify the root domain to use:")
@@ -163,10 +159,10 @@ def update_hashes(config_location: Path,
 
     Parameters
     ----------
-    config : ConfigDict.cd
-    new_hashes : Optional[dict[str, str]]
-    deleted_hashes : Optional[dict[str, str]]
-    config_location : Path
+    config : config dictionary
+    new_hashes : dictionary with new hashes
+    deleted_hashes : dictionary with hashes to be removed
+    config_location : path to config file
 
     Notes
     -----
@@ -200,21 +196,17 @@ def main(validate: bool,
          delete_files: bool,
          root_domain: Optional[str] = None,
          output_dir: Optional[str] = None,
-         *_ : Any, **__ : Any) -> None:
+         *_: Any, **__: Any) -> None:
     """
     Function responsible for loading and saving data to/from the config
     file.
 
     Parameters
     ----------
-    delete_files : bool
-        Whether to delete files not present in the patch list
-    validate : bool
-        Whether to recalculate and check hashes of all files
-    root_domain : Optional[str]
-        The root domain from which to calculate download paths
-    output_dir : Optional[str]
-        Where to save all the files
+    delete_files : Whether to delete files not present in the patch list
+    validate : Whether to recalculate and check hashes of all files
+    root_domain : The root domain from which to calculate download paths
+    output_dir : Where to save all the files
     """
     config: ConfigDict
 

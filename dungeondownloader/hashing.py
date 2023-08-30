@@ -26,13 +26,11 @@ class Hashing:
 
         Parameters
         ----------
-        files : Union[list[Path], Path]
-            Either a single Path object or a list
+        files : Either a single Path object or a list
 
         Returns
         -------
-        hash : dict[str, str]
-            Because execution may be out of order (due to
+        hash : Because execution may be out of order (due to
             multiprocessing), the returned dictionary is probably not
             in the same order as the given files list. The key is the
             provided file path and the value is the hash.
