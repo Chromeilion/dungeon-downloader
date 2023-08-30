@@ -5,7 +5,7 @@ import dungeondownloader.savewrapper
 from dungeondownloader._version import __version__
 
 
-def main():
+def main() -> None:
     """Run the CLI with Argparse and call the rest of the module afterward.
     """
     parser = ap.ArgumentParser(
@@ -20,14 +20,12 @@ def main():
     )
     parser.add_argument(
         "-r", "--root-domain",
-        nargs=1,
         type=str,
         help="The root domain from which to download everything.",
         required=False
     )
     parser.add_argument(
         "-o", "--output-dir",
-        nargs=1,
         type=str,
         help="The directory where to output everything. If there are "
              "files currently present in the directory, they will be "

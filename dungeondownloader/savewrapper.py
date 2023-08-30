@@ -1,13 +1,13 @@
 import json
 import logging
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Any
 
 import appdirs
 from pydantic import ValidationError
 
 import dungeondownloader.dd
-from dungeondownloader.config_dict import ConfigDict
+from dungeondownloader.config_dict import ConfigDict, ConfigDictPydantic
 
 
 def load_config_filepath() -> Path:
@@ -42,7 +42,7 @@ def load_config_filepath() -> Path:
 def generate_config(config_location: Path,
                     root_domain: Optional[str] = None,
                     output_dir: Optional[str] = None,
-                    hashes: Optional[dict[str, str]] = None):
+                    hashes: Optional[dict[str, str]] = None) -> ConfigDict:
     """
     Create a new config and write it to disk.
 
@@ -57,7 +57,7 @@ def generate_config(config_location: Path,
         root_domain = input("Please specify the root domain to use:")
     if output_dir is None:
         output_dir = input("Please specify the output directory:")
-    config: ConfigDict.cd = {
+    config: ConfigDict = {
         "root_domain": root_domain,
         "output_dir": output_dir,
     }
@@ -74,7 +74,7 @@ def generate_config(config_location: Path,
 def read_and_validate_config(config_location: Path,
                              root_domain: Optional[str] = None,
                              output_dir: Optional[str] = None
-                             ) -> ConfigDict.cd:
+                             ) -> ConfigDict:
     """
     Load a config file and use Pydantic to validate it against the
     ConfigDict type.
@@ -87,12 +87,12 @@ def read_and_validate_config(config_location: Path,
     ideal, perhaps it would be better to try and salvage what parts of
     the file are recognizable and build the new file from that.
     """
-    config: ConfigDict.cd
+    config: ConfigDict
     with open(config_location, "r") as f:
         config = json.load(f)
     logging.debug(f"Loaded config file, attempting to validate")
     try:
-        ConfigDict.cdp.validate_python(config)
+        ConfigDictPydantic.validate_python(config)
         logging.info("Config successfully loaded and validated")
     except ValidationError:
         logging.warning("The current config is invalid, generating a "
@@ -116,7 +116,8 @@ def read_and_validate_config(config_location: Path,
     return config
 
 
-def add_new_hashes(new_hashes: dict[str, str], hash_dict: dict[str, str]):
+def add_new_hashes(new_hashes: dict[str, str],
+                   hash_dict: dict[str, str]) -> None:
     """
     Add/update hashes in hash_dict based on values in new_hashes.
     Performs operations on hash_dict in-place.
@@ -136,7 +137,8 @@ def add_new_hashes(new_hashes: dict[str, str], hash_dict: dict[str, str]):
                           f"the file is new.")
 
 
-def remove_hashes(deleted_hashes: dict[str, str], hash_dict: dict[str, str]):
+def remove_hashes(deleted_hashes: dict[str, str],
+                  hash_dict: dict[str, str]) -> None:
     """
     Remove hashes from a hash_dict in-place based on hashes in
     deleted_hashes.
@@ -151,9 +153,9 @@ def remove_hashes(deleted_hashes: dict[str, str], hash_dict: dict[str, str]):
 
 
 def update_hashes(config_location: Path,
-                  config: ConfigDict.cd,
+                  config: ConfigDict,
                   new_hashes: Optional[dict[str, str]] = None,
-                  deleted_hashes: Optional[dict[str, str]] = None):
+                  deleted_hashes: Optional[dict[str, str]] = None) -> None:
     """
     Given a config dict, a dict of new hashes, and a dict
     of hashes to remove, update config with the new hashes, remove the
@@ -196,9 +198,9 @@ def update_hashes(config_location: Path,
 
 def main(validate: bool,
          delete_files: bool,
-         root_domain: Optional[list[str]] = None,
-         output_dir: Optional[list[str]] = None,
-         *_, **__):
+         root_domain: Optional[str] = None,
+         output_dir: Optional[str] = None,
+         *_ : Any, **__ : Any) -> None:
     """
     Function responsible for loading and saving data to/from the config
     file.
@@ -209,16 +211,12 @@ def main(validate: bool,
         Whether to delete files not present in the patch list
     validate : bool
         Whether to recalculate and check hashes of all files
-    root_domain
+    root_domain : Optional[str]
         The root domain from which to calculate download paths
-    output_dir
+    output_dir : Optional[str]
         Where to save all the files
     """
-    if root_domain is not None:
-        root_domain = root_domain[0]
-    if output_dir is not None:
-        output_dir = output_dir[0]
-    config: ConfigDict.cd
+    config: ConfigDict
 
     config_filepath = load_config_filepath()
     if not config_filepath.exists():

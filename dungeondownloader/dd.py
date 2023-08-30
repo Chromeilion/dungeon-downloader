@@ -1,9 +1,11 @@
+from __future__ import annotations
+
 import logging
 import os
 from functools import partial
 from multiprocessing.dummy import Pool as ThreadPool
 from pathlib import Path
-from typing import Optional
+from typing import Optional, TypeVar
 
 import requests
 from tqdm import tqdm
@@ -12,9 +14,11 @@ from dungeondownloader.config_dict import hash_dict
 from dungeondownloader.hashing import Hashing
 from dungeondownloader.patch_file import file_list, PatchFile
 
+_T = TypeVar("_T")
+
 
 def confirm(question: str,
-            default: Optional[bool] = None):
+            default: Optional[bool] = None) -> bool:
     """Very simple yes/no prompt. Defaults to True.
     """
     if default is None:
@@ -36,7 +40,9 @@ def confirm(question: str,
             print("Please respond with 'yes' or 'no' (or 'y'/'n').\n")
 
 
-def download(url: str, filepath: str, pbar: tqdm, chunk_size=1024):
+def download(url: str, filepath: str,
+             pbar: tqdm[_T],
+             chunk_size: Optional[int] = None) -> None:
     """
     Download some url and save it to a file. Takes a tqdm progress bar and
     updates it as the file downloads.
@@ -49,6 +55,9 @@ def download(url: str, filepath: str, pbar: tqdm, chunk_size=1024):
     chunk_size : int
         default is 1024
     """
+    if chunk_size is None:
+        chunk_size = 1024
+
     os.makedirs(os.path.dirname(filepath), exist_ok=True)
     r = requests.get(url, stream=True)
     with open(filepath, "wb") as f:
@@ -57,7 +66,9 @@ def download(url: str, filepath: str, pbar: tqdm, chunk_size=1024):
             pbar.update(size)
 
 
-def download_patch(patch_file: PatchFile, pbar: tqdm):
+def download_patch(patch_file: PatchFile,
+                   pbar: tqdm[_T]
+                   ) -> None:
     """Simple wrapper around download that unpacks a patch file.
     """
     download(
@@ -74,19 +85,19 @@ def read_patchlist(url: str) -> file_list:
     """
     r = requests.get(url)
     patch_file_list = r.content.split(b"\n")
-    patch_file_list = [i.decode().replace("\\", "/").split(",") for i in
-                       patch_file_list]
-    patch_file_list = [i for i in patch_file_list if len(i) == 3]
+    patch_file_list_parsed = [
+        i.decode().replace("\\", "/").split(",") for i in patch_file_list
+    ]
+    patch_file_list_parsed = [i for i in patch_file_list_parsed if len(i) == 3]
     patch_files = []
-    for i in patch_file_list:
-        patch_files.append(
-            {
-                "path": Path(i[0][1:]),
-                "url": i[0],
-                "hash": i[1],
-                "size": int(i[2])
-            }
-        )
+    for i in patch_file_list_parsed:
+        patch_file: PatchFile = {
+            "path": Path(i[0][1:]),
+            "url": i[0],
+            "hash": i[1],
+            "size": int(i[2])
+        }
+        patch_files.append(patch_file)
     return patch_files
 
 
@@ -147,17 +158,17 @@ def check_files(files: file_list,
     return invalid, hashes
 
 
-def calc_full_paths(root_dir: Path, files: file_list):
+def calc_full_paths(root_dir: Path, files: file_list) -> None:
     for file in files:
         file["full_path"] = root_dir.joinpath(file["path"])
 
 
-def calc_full_urls(url_root: str, files: file_list):
+def calc_full_urls(url_root: str, files: file_list) -> None:
     for file in files:
         file["full_url"] = url_root + file["url"]
 
 
-def update_files(files: file_list):
+def update_files(files: file_list) -> None:
     """
     Download files from a list of PatchFile objects. The 'size'
     parameter is used to create a progress bar and estimate time
@@ -191,33 +202,37 @@ def remove_redundant_files(hashes: dict[str, str],
         A list of all files that have been deleted in the form of full
         filepaths.
     """
-    delete = []
+    delete_list: list[str] = []
     all_filepaths = [str(i["full_path"]) for i in patch_files]
-    for i in hashes:
-        if i not in all_filepaths:
-            delete.append(i)
-    if delete:
+    for h in hashes:
+        if h not in all_filepaths:
+            delete_list.append(h)
+    if delete_list:
         # In case the amount of files to delete is large, ask the user for
         # input.
-        if len(delete) > 10:
-            question = f"Found {len(delete)} files to delete when updating, " \
-                       f"are you sure this is correct?"
+        if len(delete_list) > 10:
+            question = f"Found {len(delete_list)} files to delete when " \
+                       f"updating, are you sure this is correct?"
             if not confirm(question=question, default=False):
-                return
+                return None
 
-        delete_path = [Path(i) for i in delete]
-        deleted = [str(i.unlink()) for i in delete_path if i.exists()]
-        if delete:
+        delete_path = [Path(i) for i in delete_list]
+        existent = [i for i in delete_path if i.exists()]
+        non_existent = [str(i) for i in delete_path if i not in existent]
+        for file in existent:
+            file.unlink()
+
+        if non_existent:
             logging.error(f"Asked to delete the following files: \n"
-                          f"{delete}\n"
+                          f"{non_existent}\n"
                           f"But they do not exist. Continuing program "
                           f"execution anyway")
-        no_deleted = len(delete) - (len(delete) - len(deleted))
+        no_deleted = len(delete_list) - (len(delete_list) - len(existent))
         logging.info(f"Deleted {no_deleted} files from disk that are no "
                      f"longer on the patch list")
+        return delete_list
     else:
-        delete = None
-    return delete
+        return None
 
 
 def check_maintenence(root_domain: str) -> bool:
@@ -231,7 +246,7 @@ def check_maintenence(root_domain: str) -> bool:
 
 def update_invalid_files(invalid_patch_files: file_list,
                          patch_files: file_list,
-                         patch_root: str):
+                         patch_root: str) -> hash_dict:
     """Download updates to invalid files and check their hashes afterward.
     """
     hasher = Hashing()
@@ -291,12 +306,12 @@ def main(root_domain: str,
                      "later")
         return new_files, deleted_files
 
-    output_dir = Path(output_dir)
+    output_dir_path = Path(output_dir)
     patch_root = root_domain + "/Patch"
     patch_file_list_location = "/PatchFileList.txt"
 
     patch_files = read_patchlist(root_domain + patch_file_list_location)
-    calc_full_paths(output_dir, patch_files)
+    calc_full_paths(output_dir_path, patch_files)
 
     invalid_patch_files, hashes = check_files(files=patch_files,
                                               hashes=hashes,
@@ -310,9 +325,9 @@ def main(root_domain: str,
         )
 
     if remove_files:
-        deleted_files = remove_redundant_files(hashes=hashes,
-                                               patch_files=patch_files)
+        deleted = remove_redundant_files(hashes=hashes,
+                                         patch_files=patch_files)
         if deleted_files is not None:
-            deleted_files = {i: hashes[i] for i in deleted_files}
+            deleted_files = {i: hashes[i] for i in deleted}
 
     return new_files, deleted_files
