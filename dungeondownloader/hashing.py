@@ -1,4 +1,5 @@
 import hashlib
+import logging
 import os
 import platform
 from functools import partial
@@ -9,13 +10,15 @@ from typing import Union
 
 from tqdm import tqdm
 
+# This is useful as an import in other parts of the code
+HashDict = dict[str, str]
+
 
 class Hashing:
+    """Class containing functions for calculating hashes.
     """
-    Class containing functions for calculating hashes
-    """
-    def get_sha256_hash(self, files: Union[list[Path], Path]) -> \
-            dict[str, str]:
+    def get_sha256_hash(self,
+                        files: Union[list[Path], Path]) -> HashDict:
         """
         Get the sha256 hash of a file. Attempts to use platform
         specific utilities but falls back to pure Python if there is an
@@ -26,27 +29,22 @@ class Hashing:
 
         Parameters
         ----------
-        files : Union[list[Path], Path]
-            Either a single Path object or a list
+        files : Either a single Path object or a list of Path objects
 
         Returns
         -------
-        hash : dict[str, str]
-            Because execution may be out of order (due to
-            multiprocessing), the returned dictionary is probably not
-            in the same order as the given files list. The key is the
-            provided file path and the value is the hash.
+        hash_dict : dictionary where the key is the provided file path and
+            the value is the hash
         """
         if not isinstance(files, list):
             files = [files]
 
         system = platform.system()
+        logging.debug(f"Identified {system} as platform when calculating "
+                      f"hashes")
         try:
-            if system == "Darwin":
-                sh256_hash = self._get_sha256_hash_darwin(files=files)
-
-            elif system == "Linux":
-                sh256_hash = self._get_sha256_hash_linux(files=files)
+            if system in ["Darwin", "Linux"]:
+                sh256_hash = self._sha256sum(files=files)
 
             else:
                 sh256_hash = self._get_sha256_hash_generic(files=files)
@@ -57,7 +55,7 @@ class Hashing:
         return sh256_hash
 
     @staticmethod
-    def _get_sha256_hash_generic(files: list[Path]) -> dict[str, str]:
+    def _get_sha256_hash_generic(files: list[Path]) -> HashDict:
         """
         Native Python sha256 hash calculation implementation, should
         work anywhere where Python works but is slow.
@@ -73,25 +71,18 @@ class Hashing:
         return hashes
 
     @staticmethod
-    def _sha256sum(files: list[Path]) -> dict[str, str]:
+    def _sha256sum(files: list[Path]) -> HashDict:
         """
         Use the sha256sum command with multiple threads to quickly
         calculate file hashes.
         """
         commands = [("sha256sum", str(i)) for i in files]
+        popen_wrap = partial(Popen, stdout=PIPE, stderr=PIPE)
         results = {}
         with Pool(os.cpu_count()) as pool:
-            for result in tqdm(
-                pool.imap(
-                    partial(
-                        Popen,
-                        stdout=PIPE,
-                        stderr=PIPE),
-                    commands
-                ),
-                desc="Calculating file hashes",
-                total=len(commands)
-            ):
+            for result in tqdm(pool.imap(popen_wrap, commands),
+                               desc="Calculating file hashes",
+                               total=len(commands)):
                 err = result.stderr.readlines()
                 if err:
                     raise ChildProcessError("Running sha256sum returned a "
@@ -99,19 +90,3 @@ class Hashing:
                 output = str(result.stdout.readlines()).split(" ", 1)
                 results[output[1][1:-4]] = output[0][3:]
         return results
-
-    def _get_sha256_hash_darwin(self, files: list[Path]) -> \
-            dict[str, str]:
-        """
-        Hash calculation for Apple systems, relies on the sha256sum
-        command.
-        """
-        return self._sha256sum(files=files)
-
-    def _get_sha256_hash_linux(self, files: list[Path]) -> \
-            dict[str, str]:
-        """
-        Hash calculation for Linux systems, relies on sha256sum being
-        installed, which should be the case on most distros.
-        """
-        return self._sha256sum(files=files)

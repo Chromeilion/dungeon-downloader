@@ -6,7 +6,11 @@ from dotenv import load_dotenv
 import dungeondownloader.cli
 
 
-def set_loglevel():
+def set_loglevel() -> None:
+    """
+    Set the log level based on the DUNGEONDOWNLOADER_LOGLEVEL env
+    variable. Supports a .env file and defaults to 'INFO'.
+    """
     load_dotenv()
     logging.basicConfig(
         format='%(levelname)s:%(message)s',
@@ -17,10 +21,11 @@ def set_loglevel():
     )
 
 
-def main():
+def main() -> None:
+    """Script Entrypoint. Sets loglevel and runs the CLI.
+    """
     set_loglevel()
     dungeondownloader.cli.main()
-    logging.info("Run complete, exiting")
 
 
 if __name__ == "__main__":

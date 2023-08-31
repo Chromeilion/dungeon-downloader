@@ -3,6 +3,11 @@
 Download, update, and verify your dungeon game files, all with one 
 command!
 
+## Disclaimer
+
+This is a fan made program that relies on an undocumented API and may have 
+errors. Use at your own risk.
+
 ## Install
 ### Release
 Simply download the latest release for your platform from
@@ -19,7 +24,7 @@ Make sure you're using python 3.12, and then simply run:
 ```bash
 pip install git+https://github.com/Chromeilion/dungeon-downloader.git@main
 ```
-Then to run the module you can just type ```dungeon-downloader``` in 
+Then to run the module you can just type ```dungeondownloader``` in 
 your terminal.
 ### For Development
 
@@ -39,7 +44,7 @@ so that you get Python debug utils as well.
 ## Usage
 
 When running for the first time, there are two flags that you need to 
-provide. 
+provide:
 
 ```-r``` or ```--root-domain``` is the root domain from which everything 
 is downloaded. For example:
@@ -73,18 +78,26 @@ directory for your OS. For linux that would be
 If you supply command line arguments, they will always overwrite the 
 current config file.
 
-When rerunning the script, only files whose hashes have changed online 
-will be updated. To force a full recalculation of all local hashes 
-(stored in config.json), you can supply the ```-v``` flag.
+### Optional Arguments
+These arguments don't get saved, so they need to be present every time the 
+script is run if you want to use them.
+
+```-d``` or ```--delete-files``` will delete all files that were 
+previously downloaded but are no longer present in the online patch list.
+
+```-v``` or ```--validate``` forces a full recalculation of all local 
+hashes (stored in config.json).
 
 For more info just run Dungeon Downloader with the ```-h``` flag.
 
 ## Contributions
 
 Contributions are very welcome, just fork and pull request. Make sure to 
-be following [PEP 8](https://peps.python.org/pep-0008/) and use 
+be following [PEP 8](https://peps.python.org/pep-0008/), use 
 [NumPy](https://numpydoc.readthedocs.io/en/latest/format.html) style 
-docstrings.
+docstrings along with [sphinx-autodoc-typehints](https://github.com/tox-dev/sphinx-autodoc-typehints)
+to avoid duplicate type hints and maintain compliance with mypy 
+--strict.
 
 Log level is controllable via the DUNGEONDOWNLOADER_LOGLEVEL env 
 variable. You can use a .env file if its more convenient.
