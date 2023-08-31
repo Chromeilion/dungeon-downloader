@@ -24,7 +24,7 @@ Make sure you're using python 3.12, and then simply run:
 ```bash
 pip install git+https://github.com/Chromeilion/dungeon-downloader.git@main
 ```
-Then to run the module you can just type ```dungeon-downloader``` in 
+Then to run the module you can just type ```dungeondownloader``` in 
 your terminal.
 ### For Development
 
