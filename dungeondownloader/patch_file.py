@@ -19,4 +19,4 @@ class PatchFile(PatchFileBase, total=False):
 
 
 # Useful when working with a lot of patch files
-file_list = list[PatchFile]
+PatchFileList = list[PatchFile]

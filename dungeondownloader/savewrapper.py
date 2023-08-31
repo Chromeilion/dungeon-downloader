@@ -4,10 +4,10 @@ from pathlib import Path
 from typing import Optional, Any
 
 import appdirs
-from pydantic import ValidationError
+from pydantic import ValidationError, TypeAdapter
 
 import dungeondownloader.dd
-from dungeondownloader.config_dict import ConfigDict, ConfigDictPydantic
+from dungeondownloader.config_dict import ConfigDict
 
 
 def load_config_filepath() -> Path:
@@ -40,7 +40,8 @@ def generate_config(config_location: Path,
                     output_dir: Optional[str] = None,
                     hashes: Optional[dict[str, str]] = None) -> ConfigDict:
     """
-    Create a new config and write it to disk.
+    Create a new config and write it to disk. Asks user for input if no
+    root domain or output directory are specified.
 
     Parameters
     ----------
@@ -48,11 +49,16 @@ def generate_config(config_location: Path,
     root_domain : root domain url, saved to config
     output_dir : output directory string, saved to config
     hashes : the hash dictionary if there is one
+
+    Returns
+    -------
+    config : the generated config dictionary
     """
     if root_domain is None:
         root_domain = input("Please specify the root domain to use:")
     if output_dir is None:
         output_dir = input("Please specify the output directory:")
+
     config: ConfigDict = {
         "root_domain": root_domain,
         "output_dir": output_dir,
@@ -63,7 +69,9 @@ def generate_config(config_location: Path,
     config_location.parent.mkdir(exist_ok=True)
     with open(config_location, "w") as f:
         json.dump(config, f)
+
     logging.info(f"Saved config file to {config_location}")
+
     return config
 
 
@@ -89,7 +97,7 @@ def read_and_validate_config(config_location: Path,
         config = json.load(f)
     logging.debug(f"Loaded config file, attempting to validate")
     try:
-        ConfigDictPydantic.validate_python(config)
+        TypeAdapter(ConfigDict).validate_python(config)
         logging.info("Config successfully loaded and validated")
     except ValidationError:
         logging.warning("The current config is invalid, generating a "
@@ -164,13 +172,6 @@ def update_hashes(config_location: Path,
     new_hashes : dictionary with new hashes
     deleted_hashes : dictionary with hashes to be removed
     config_location : path to config file
-
-    Notes
-    -----
-    This function is longer (and slower) than it needs to be because
-    every case is getting logged. While it certainly adds to the code
-    complexity, logging also makes it much easier to debug issues, so I
-    think its worth it.
     """
     logging.debug("Updating hashes")
     if "hashes" not in config:
@@ -178,14 +179,17 @@ def update_hashes(config_location: Path,
                       "entry")
         config["hashes"] = {}
     hash_dict = config["hashes"]
+
     if new_hashes is None:
         logging.debug("No new hashes found")
     else:
         add_new_hashes(new_hashes=new_hashes, hash_dict=hash_dict)
+
     if deleted_hashes is None:
         logging.debug("No hashes deleted")
     else:
         remove_hashes(deleted_hashes=deleted_hashes, hash_dict=hash_dict)
+
     if new_hashes is not None or deleted_hashes is not None:
         generate_config(root_domain=config["root_domain"],
                         output_dir=config["output_dir"],
@@ -204,13 +208,12 @@ def main(validate: bool,
 
     Parameters
     ----------
-    delete_files : whether to delete files not present in the patch list
+    delete_files : whether to delete files present on previous but not
+        current patch list
     validate : whether to recalculate and check hashes of all files
     root_domain : the root domain from which to calculate download paths
     output_dir : where to save all the files
     """
-    config: ConfigDict
-
     config_filepath = load_config_filepath()
     if not config_filepath.exists():
         logging.info("Generating new config file")
@@ -226,6 +229,7 @@ def main(validate: bool,
     hashes = None
     if "hashes" in config.keys():
         hashes = config["hashes"]
+
     logging.info(f"Running with root domain: {config['root_domain']} and "
                  f"output directory: {config['output_dir']}")
     new_hashes, deleted_hashes = dungeondownloader.dd.main(

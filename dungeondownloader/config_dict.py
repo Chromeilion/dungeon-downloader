@@ -1,6 +1,6 @@
 from typing import TypedDict
 
-from pydantic import TypeAdapter
+from dungeondownloader.hashing import HashDict
 
 
 class ConfigDictRequired(TypedDict, total=True):
@@ -10,14 +10,7 @@ class ConfigDictRequired(TypedDict, total=True):
     output_dir: str
 
 
-# This is useful as an import in other parts of the code
-hash_dict = dict[str, str]
-
-
 class ConfigDict(ConfigDictRequired, total=False):
     """Optional config keys.
     """
-    hashes: hash_dict
-
-
-ConfigDictPydantic = TypeAdapter(ConfigDict)
+    hashes: HashDict

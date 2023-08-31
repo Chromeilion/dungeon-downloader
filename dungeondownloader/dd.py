@@ -10,9 +10,8 @@ from typing import Optional, TypeVar
 import requests
 from tqdm import tqdm
 
-from dungeondownloader.config_dict import hash_dict
-from dungeondownloader.hashing import Hashing
-from dungeondownloader.patch_file import file_list, PatchFile
+from dungeondownloader.hashing import Hashing, HashDict
+from dungeondownloader.patch_file import PatchFileList, PatchFile
 
 _T = TypeVar("_T")
 
@@ -40,12 +39,12 @@ def confirm(question: str,
             print("Please respond with 'yes' or 'no' (or 'y'/'n').\n")
 
 
-def download(url: str, filepath: str,
+def download(url: str,
+             filepath: str,
              pbar: tqdm[_T],
              chunk_size: Optional[int] = None) -> None:
     """
-    Download some url and save it to a file. Takes a tqdm progress bar and
-    updates it as the file downloads.
+    Download from the provided url and save it to a file.
 
     Parameters
     ----------
@@ -77,7 +76,7 @@ def download_patch(patch_file: PatchFile,
     )
 
 
-def read_patchlist(url: str) -> file_list:
+def read_patchlist(url: str) -> PatchFileList:
     """
     Download and parse a text file where every line corresponds to a
     PatchFile type object.
@@ -100,10 +99,10 @@ def read_patchlist(url: str) -> file_list:
     return patch_files
 
 
-def check_files(files: file_list,
+def check_files(files: PatchFileList,
                 validate: bool,
-                hashes: Optional[hash_dict] = None
-                ) -> tuple[file_list, hash_dict]:
+                hashes: Optional[HashDict] = None
+                ) -> tuple[PatchFileList, HashDict]:
     """
     Compare hashes stored within the PatchFile objects with the provided
     hashes dictionary. If any of the hashes don't match, that file is
@@ -156,17 +155,17 @@ def check_files(files: file_list,
     return invalid, hashes
 
 
-def calc_full_paths(root_dir: Path, files: file_list) -> None:
+def calc_full_paths(root_dir: Path, files: PatchFileList) -> None:
     for file in files:
         file["full_path"] = root_dir.joinpath(file["path"])
 
 
-def calc_full_urls(url_root: str, files: file_list) -> None:
+def calc_full_urls(url_root: str, files: PatchFileList) -> None:
     for file in files:
         file["full_url"] = url_root + file["url"]
 
 
-def update_files(files: file_list) -> None:
+def update_files(files: PatchFileList) -> None:
     """
     Download files from a list of PatchFile objects.
     Uses multiple threads to speed up the download (in some cases).
@@ -185,8 +184,8 @@ def update_files(files: file_list) -> None:
         p.map(partial(download_patch, pbar=pbar), files)
 
 
-def remove_redundant_files(hashes: dict[str, str],
-                           patch_files: file_list) -> Optional[list[str]]:
+def remove_redundant_files(hashes: HashDict,
+                           patch_files: PatchFileList) -> Optional[list[str]]:
     """
     Delete all files that exist in the hash dictionary but not in the
     patch list. Asks for confirmation if the number of files to delete is
@@ -197,11 +196,9 @@ def remove_redundant_files(hashes: dict[str, str],
     deleted : A list of all files that have been deleted in the form of
         full filepaths.
     """
-    delete_list: list[str] = []
-    all_filepaths = [str(i["full_path"]) for i in patch_files]
-    for h in hashes:
-        if h not in all_filepaths:
-            delete_list.append(h)
+    patch_files_str = [str(i["full_path"]) for i in patch_files]
+    delete_list = [h for h in hashes if h not in patch_files_str]
+
     if delete_list:
         # In case the amount of files to delete is large, ask the user for
         # input.
@@ -211,23 +208,18 @@ def remove_redundant_files(hashes: dict[str, str],
             if not confirm(question=question, default=False):
                 return None
 
-        delete_path = [Path(i) for i in delete_list]
-        existent = [i for i in delete_path if i.exists()]
-        non_existent = [str(i) for i in delete_path if i not in existent]
-        for file in existent:
-            file.unlink()
+        for file in delete_list:
+            try:
+                Path(file).unlink()
+            except FileNotFoundError:
+                logging.error(f"Asked to delete the following file: "
+                              f"{file}, but it does not exist. Continuing "
+                              f"program execution anyway")
 
-        if non_existent:
-            logging.error(f"Asked to delete the following files: \n"
-                          f"{non_existent}\n"
-                          f"But they do not exist. Continuing program "
-                          f"execution anyway")
-        no_deleted = len(delete_list) - (len(delete_list) - len(existent))
-        logging.info(f"Deleted {no_deleted} files from disk that are no "
-                     f"longer on the patch list")
+        logging.info(f"Removed {len(delete_list)} files that are no longer "
+                     f"on the patch list")
         return delete_list
-    else:
-        return None
+    return None
 
 
 def check_maintenence(root_domain: str) -> bool:
@@ -239,10 +231,10 @@ def check_maintenence(root_domain: str) -> bool:
     return False
 
 
-def update_invalid_files(invalid_patch_files: file_list,
-                         patch_files: file_list,
-                         patch_root: str) -> hash_dict:
-    """Download updates to invalid files and check their hashes afterward.
+def update_invalid_files(invalid_patch_files: PatchFileList,
+                         patch_files: PatchFileList,
+                         patch_root: str) -> HashDict:
+    """Download updates for invalid files and check their hashes afterward.
     """
     hasher = Hashing()
     calc_full_urls(url_root=patch_root, files=patch_files)
@@ -262,9 +254,9 @@ def update_invalid_files(invalid_patch_files: file_list,
 def main(root_domain: str,
          output_dir: str,
          validate: bool,
-         hashes: Optional[hash_dict] = None,
+         hashes: Optional[HashDict] = None,
          remove_files: Optional[bool] = None
-         ) -> tuple[Optional[hash_dict], Optional[hash_dict]]:
+         ) -> tuple[Optional[HashDict], Optional[HashDict]]:
     """
     The main module workflow. Responsible for just about everything.
 
