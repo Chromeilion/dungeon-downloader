@@ -93,10 +93,11 @@ For more info just run Dungeon Downloader with the ```-h``` flag.
 ## Contributions
 
 Contributions are very welcome, just fork and pull request. Make sure to 
-be following [PEP 8](https://peps.python.org/pep-0008/) and use 
+be following [PEP 8](https://peps.python.org/pep-0008/), use 
 [NumPy](https://numpydoc.readthedocs.io/en/latest/format.html) style 
 docstrings along with [sphinx-autodoc-typehints](https://github.com/tox-dev/sphinx-autodoc-typehints)
-to avoid duplicate type hints.
+to avoid duplicate type hints and maintain compliance with mypy 
+--strict.
 
 Log level is controllable via the DUNGEONDOWNLOADER_LOGLEVEL env 
 variable. You can use a .env file if its more convenient.
