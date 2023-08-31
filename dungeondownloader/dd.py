@@ -57,7 +57,8 @@ def download(url: str,
         chunk_size = 1024
 
     os.makedirs(os.path.dirname(filepath), exist_ok=True)
-    r = requests.get(url, stream=True)
+    r = requests.get(url, stream=True,
+                     headers={'Cache-Control': 'no-cache'})
     with open(filepath, "wb") as f:
         for data in r.iter_content(chunk_size=chunk_size):
             size = f.write(data)
