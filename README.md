@@ -5,8 +5,13 @@ command!
 
 ## Disclaimer
 
-This is a fan made program that relies on an undocumented API and may have 
-errors. Use at your own risk.
+This is a fan made program that relies on an undocumented API, use at 
+your own risk.
+
+If you're running into issues with the launcher not working and are 
+considering this script as an alternative to downloading through the 
+launcher, first try installing the game using the Lutris install script, 
+which includes some patches for the launcher.
 
 ## Install
 ### Release
