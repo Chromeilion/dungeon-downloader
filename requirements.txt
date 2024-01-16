@@ -1,6 +1,6 @@
 requests~=2.31.0
 tqdm~=4.66.1
-pydantic~=2.3.0
+pydantic~=2.5.3
 python-dotenv~=1.0.0
-pyinstaller==5.13.2
+pyinstaller~=6.3.0
 appdirs~=1.4.4
